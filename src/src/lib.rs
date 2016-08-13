@@ -13,6 +13,9 @@ use libtww::prelude::*;
 use libtww::system::tww::report;
 use libtww::std::collections::HashMap;
 use libtww::system::memory;
+use libtww::link::{item, Link};
+use libtww::link::inventory::Inventory;
+use libtww::link::quest_items::{QuestItems, Sword};
 use libtww::warping::{Entrance, Warp as GameWarp};
 
 type WarpTable = HashMap<&'static Warp<'static, 'static>, &'static Destination<'static>>;
@@ -35,8 +38,8 @@ fn make_warp_table(name: &Name) -> (WarpTable, Name) {
     (WARPS.iter().zip(destinations.into_iter()).collect(), *name)
 }
 
-fn get_name() -> &'static Name {
-    memory::reference(0x803B8264)
+fn get_name<'a>() -> &'a Name {
+    unsafe { &*(0x803B8264 as *const _) }
 }
 
 #[no_mangle]
@@ -87,20 +90,273 @@ pub extern "C" fn set_next_stage_hook() {
     }
 }
 
-#[no_mangle]
+// Broken
+// static mut D: Option<(WarpTable, Name)> = None;
+
+// fn misbehave() {
+//     let name = get_name();
+//     let recalculate = unsafe { D.as_ref() }
+//         .map(|&(_, ref old_name)| old_name != name)
+//         .unwrap_or(true) && name != &[0; 8];
+
+//     if recalculate {
+//         report("Recalculate Warp Table");
+//         unsafe {
+//             D = Some((HashMap::new(), *name));
+//         }
+//     }
+// }
+
+// Broken
+// static mut D: Option<(WarpTable, Name)> = None;
+
+// fn misbehave() {
+//     let name = get_name();
+//     let recalculate = unsafe { D.as_ref() }
+//         .map(|&(_, ref old_name)| old_name != name)
+//         .unwrap_or(true) && name != &[0; 8];
+
+//     if recalculate {
+//         report("Recalculate Warp Table");
+//         unsafe {
+//             let name = *name;
+//             D = Some((HashMap::new(), name));
+//         }
+//     }
+// }
+
+// Broken
+// static mut D: Option<(WarpTable, Name)> = None;
+
+// fn misbehave() {
+//     let name = get_name();
+//     let copy = *name;
+//     let recalculate = unsafe { D.as_ref() }
+//         .map(|&(_, ref old_name)| old_name != &copy)
+//         .unwrap_or(true) && name != &[0; 8];
+
+//     if recalculate {
+//         report("Recalculate Warp Table");
+//         unsafe {
+//             let name = *name;
+//             D = Some((HashMap::new(), name));
+//         }
+//     }
+// }
+
+// Broken
+// static mut D: Option<(String, [u8; 8])> = None;
+
+// fn misbehave() {
+//     let name = get_name();
+//     let copy = *name;
+//     let recalculate = unsafe { D.as_ref() }
+//         .map(|&(_, ref old_name)| old_name != &copy)
+//         .unwrap_or(true) && name != &[0; 8];
+
+//     if recalculate {
+//         report("Recalculate Warp Table");
+//         unsafe {
+//             D = Some((String::new(), copy));
+//         }
+//     }
+// }
+
+// Broken
+static mut D: Option<(String, [u8; 8])> = None;
+
 #[inline(never)]
-pub extern "C" fn game_loop() {
-    let recalculate = unsafe { WARP_TABLE.as_ref() }
-        .map(|&(_, ref name)| name != get_name())
-        .unwrap_or(true) && get_name() != &[0; 8];
+fn recalculate() -> bool {
+    let name = get_name();
+    let copy = *get_name();
+    unsafe { D.as_ref() }
+        .map(|&(_, ref old_name)| {
+            old_name != &copy
+        })
+        .unwrap_or(true) && name != &[0; 8]
+}
+
+fn misbehave() {
+    let name = get_name();
+    let recalculate = recalculate();
 
     if recalculate {
         report("Recalculate Warp Table");
         unsafe {
-            WARP_TABLE = Some(make_warp_table(get_name()));
+            D = Some((String::new(), *name));
         }
     }
 }
+
+// static mut D: Option<(String, [u8; 8])> = None;
+
+// #[inline(never)]
+// fn misbehave2(name: &'static [u8; 8]) {
+//     // let name = get_name();
+//     let copy = *name;
+//     let recalculate = unsafe { D.as_ref() }
+//         .map(|&(ref _lel, ref old_name)| {
+//             let same = old_name != &copy;
+//             report(&format!("{} == ({:?} != {:?})", same, old_name, &copy));
+//             same
+//         })
+//         .unwrap_or(true) && name != &[0; 8];
+
+//     if recalculate {
+//         report("Recalculate Warp Table");
+//         unsafe {
+//             D = Some((String::new(), copy));
+//         }
+//     }
+// }
+
+// #[inline(never)]
+// fn get_local_name() -> &'static [u8; 8] {
+//     static NAME: [u8; 8] = [1; 8];
+//     get_name()
+// }
+
+// fn misbehave() {
+//     misbehave2(get_local_name());
+// }
+
+// Works
+// static mut D: Option<(String, [u8; 8])> = None;
+
+// fn misbehave() {
+//     let name = get_name();
+//     let copy = *name;
+//     let recalculate = unsafe { D.as_ref() }
+//         .map(|&(_, ref old_name)| {
+//             report(&format!("{}", old_name != &copy));
+//             old_name != &copy
+//         })
+//         .unwrap_or(true) && name != &[0; 8];
+
+//     if recalculate {
+//         report("Recalculate Warp Table");
+//         unsafe {
+//             D = Some((String::new(), copy));
+//         }
+//     }
+// }
+
+// Works
+// static mut D: Option<(WarpTable, Name)> = None;
+
+// fn misbehave() {
+//     let name = get_name();
+//     let copy = *name;
+//     let recalculate = unsafe { D.as_ref() }
+//         .map(|_| false)
+//         .unwrap_or(true) && name != &[0; 8];
+
+//     if recalculate {
+//         report("Recalculate Warp Table");
+//         unsafe {
+//             D = Some((HashMap::new(), copy));
+//         }
+//     }
+// }
+
+// Works
+// static mut D: Option<(WarpTable, Name)> = None;
+
+// fn misbehave() {
+//     let name = get_name();
+//     let copy = *name;
+//     let recalculate = unsafe { D.as_ref() }
+//         .map(|&(_, ref old_name)| old_name != name)
+//         .unwrap_or(true) && &copy != &[0; 8];
+
+//     if recalculate {
+//         report("Recalculate Warp Table");
+//         unsafe {
+//             let name = *name;
+//             D = Some((HashMap::new(), name));
+//         }
+//     }
+// }
+
+// Works
+// static mut D: Option<(WarpTable, Name)> = None;
+
+// fn misbehave() {
+//     let name = get_name();
+//     let recalculate = unsafe { D.as_ref() }
+//         .map(|&(_, ref old_name)| old_name != name)
+//         .unwrap_or(true);
+
+//     if recalculate {
+//         report("Recalculate Warp Table");
+//         unsafe {
+//             let name = *name;
+//             D = Some((HashMap::new(), name));
+//         }
+//     }
+// }
+
+// Works
+// static mut D: Option<(bool, Name)> = None;
+
+// fn misbehave() {
+//     let name = get_name();
+//     let recalculate = unsafe { D.as_ref() }
+//         .map(|&(_, ref old_name)| old_name != name)
+//         .unwrap_or(true) && name != &[0; 8];
+
+//     if recalculate {
+//         report("Recalculate Warp Table");
+//         unsafe {
+//             D = Some((true, *name));
+//         }
+//     }
+// }
+
+// Works
+// static mut D: Option<Name> = None;
+
+// fn misbehave() {
+//     let name = get_name();
+//     let recalculate = unsafe { D.as_ref() }
+//         .map(|old_name| old_name != name)
+//         .unwrap_or(true) && name != &[0; 8];
+
+//     if recalculate {
+//         report("Recalculate Warp Table");
+//         unsafe {
+//             D = Some(*name);
+//         }
+//     }
+// }
+
+
+#[no_mangle]
+#[inline(never)]
+pub extern "C" fn game_loop() {
+    misbehave();
+
+    // let name = *get_name();
+    // let recalculate = unsafe { WARP_TABLE.as_ref() }
+    //     .map(|&(_, ref old_name)| old_name != &name)
+    //     .unwrap_or(true) && name != [0; 8];
+
+    // if recalculate {
+    //     report("Recalculate Warp Table");
+    //     unsafe {
+    //         WARP_TABLE = Some(make_warp_table(&name));
+    //     }
+    // }
+}
+
+        // let inventory = Inventory::get();
+        // inventory.wind_waker_slot = item::WIND_WAKER;
+
+        // let quest_items = QuestItems::get();
+        // if quest_items.sword == Sword::None {
+        //     quest_items.sword = Sword::HerosSword;
+        //     Link::get().sword_id = Sword::HerosSword.item_id();
+        // }
 
 #[no_mangle]
 pub extern "C" fn start() {
