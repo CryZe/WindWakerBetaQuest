@@ -10,6 +10,9 @@ use std::io::prelude::*;
 use assembler::Assembler;
 use regex::Regex;
 use rustc_demangle::demangle;
+use dol::DolFile;
+use assembler::Instruction;
+use std::env::args;
 
 const FRAMEWORK_MAP: &'static str = include_str!("../framework.map");
 const HEADER: &'static str = r".text section layout
@@ -55,7 +58,8 @@ fn create_framework_map() {
             .replace("$u7d$", "}")
             .replace("..", "::")
             .replace(".", "-")
-            .replace("_<", "<");
+            .replace("_<", "<")
+            .replace("()", "Void");
 
         let fn_name_bytes = fn_name.as_bytes();
 
@@ -80,37 +84,106 @@ fn create_framework_map() {
 fn main() {
     let mut asm = String::new();
     let _ = File::open("../src/src/patch.asm")
-                .expect("Couldn't find \"src/src/patch.asm\". If you don't need to patch the dol, just create an empty file.")
-                .read_to_string(&mut asm);
+        .expect("Couldn't find \"src/src/patch.asm\". If you don't need to patch the dol, just \
+                 create an empty file.")
+        .read_to_string(&mut asm);
 
     let lines = &asm.lines().collect::<Vec<_>>();
 
     let mut assembler = Assembler::new("../build/intermediate.elf");
     let instructions = &assembler.assemble_all_lines(lines);
 
-    let mut original = Vec::new();
-    let _ = File::open("../game/original.dol")
-                .expect("Couldn't find \"game/original.dol\". You need to copy the game's main.dol there.")
-                .read_to_end(&mut original);
-
     let mut intermediate = Vec::new();
     let _ = File::open("../build/intermediate.dol")
-                .expect("Couldn't find \"build/intermediate.dol\". Did you build the project correctly using \"make\"?")
-                .read_to_end(&mut intermediate);
+        .expect("Couldn't find \"build/intermediate.dol\". Did you build the project correctly \
+                 using \"make\"?")
+        .read_to_end(&mut intermediate);
 
-    let mut original = dol::DolFile::new(&original);
-    let intermediate = dol::DolFile::new(&intermediate);
+    let intermediate = DolFile::new(&intermediate);
+
+    if let Some("cheat") = args().skip(1).next().as_ref().map(|x| x as &str) {
+        write_cheat(intermediate, instructions);
+    } else {
+        let mut original = Vec::new();
+        let _ = File::open("../game/original.dol")
+            .expect("Couldn't find \"game/original.dol\". You need to copy the game's main.dol \
+                     there.")
+            .read_to_end(&mut original);
+
+
+        let original = DolFile::new(&original);
+        patch_game(original, intermediate, instructions);
+    }
+}
+
+fn patch_game(original: DolFile, intermediate: DolFile, instructions: &[Instruction]) {
+    let mut original = original;
+
     original.append(intermediate);
-
-    // println!("{:#?}", tww);
-
     original.patch(instructions);
 
     let data = original.to_bytes();
     let mut file = File::create("../game/sys/main.dol")
-                       .expect("Couldn't create \"game/sys/main.dol\". You might need to provide higher privileges.");
+        .expect("Couldn't create \"game/sys/main.dol\". You might need to provide higher \
+                 privileges.");
 
-    let _ = file.write(&data);
+    file.write(&data).expect("Couldn't write the main.dol");
 
     create_framework_map();
+}
+
+fn write_cheat(intermediate: DolFile, instructions: &[Instruction]) {
+    let mut file = File::create("../cheat.txt")
+        .expect("Couldn't create \"cheat.txt\". You might need to provide higher \
+                 privileges.");
+
+    writeln!(file, "A8000000 00000001").unwrap();
+
+    for instruction in instructions {
+        writeln!(file, "{:08X} {:08X}", (instruction.address & 0x01FFFFFF) | 0x04000000, instruction.data).unwrap();
+    }
+
+    for section in intermediate.text_sections.iter().chain(intermediate.data_sections.iter()) {
+        writeln!(file, "{:08X} {:08X}", (section.address & 0x01FFFFFF) | 0x06000000, section.data.len()).unwrap();
+        let line_ender = if section.data.len() % 8 > 0 {
+            8 - (section.data.len() % 8)
+        } else {
+            0
+        };
+        for (i, byte) in section.data.iter().chain(std::iter::repeat(&0).take(line_ender)).enumerate() {
+            if i % 8 == 4 {
+                write!(file, " ").unwrap();
+            }
+
+            write!(file, "{:02X}", byte).unwrap();
+
+            if i % 8 == 7 {
+                writeln!(file, "").unwrap();
+            }
+        }
+    }
+
+    // for section in intermediate.text_sections.iter().chain(intermediate.data_sections.iter()) {
+    //     let mut address = section.address;
+
+    //     let line_ender = if section.data.len() % 4 > 0 {
+    //         4 - (section.data.len() % 4)
+    //     } else {
+    //         0
+    //     };
+
+    //     for (i, byte) in section.data.iter().chain(std::iter::repeat(&0).take(line_ender)).enumerate() {
+    //         if i % 4 == 0 {
+    //             write!(file, "{:08X} ", (address & 0x01FFFFFF) | 0x04000000).unwrap();
+    //         }
+
+    //         write!(file, "{:02X}", byte).unwrap();
+
+    //         if i % 4 == 3 {
+    //             writeln!(file, "").unwrap();
+    //         }
+
+    //         address += 1;
+    //     }
+    // }
 }

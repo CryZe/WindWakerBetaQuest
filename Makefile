@@ -59,7 +59,7 @@ export OUTPUT	:=	$(CURDIR)/$(TARGET)
 export VPATH	:=	$(foreach dir,$(SOURCES),$(CURDIR)/$(dir)) \
 					$(foreach dir,$(DATA),$(CURDIR)/$(dir)) \
 					$(foreach dir,$(TEXTURES),$(CURDIR)/$(dir))
-					
+
 
 export DEPSDIR	:=	$(CURDIR)/$(BUILD)
 
@@ -108,9 +108,9 @@ export OUTPUT	:=	$(CURDIR)/$(TARGET)
 #---------------------------------------------------------------------------------
 $(BUILD):
 	@[ -d $@ ] || mkdir -p $@
-	@cd src && cargo build --release --target powerpc-unknown-linux-gnu && cd ..
+	@cd src && cargo build --target powerpc-unknown-linux-gnu && cd ..
 	@rm -f lib/librust.a
-	@cp src/target/powerpc-unknown-linux-gnu/release/librust.a lib/.
+	@cp src/target/powerpc-unknown-linux-gnu/debug/librust.a lib/.
 	@rm -fr $(OUTPUT).elf $(OUTPUT).dol
 	@$(MAKE) --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile
 	@echo
@@ -121,6 +121,11 @@ iso: $(BUILD)
 	@echo
 	@echo Building ISO...
 	@./gcit game -q -flush -d rom_hack.iso
+#---------------------------------------------------------------------------------
+cheat: $(BUILD)
+	@echo
+	@echo Building Cheat...
+	@cd patcher && cargo build --release && ./target/release/patcher cheat && cd ..
 #---------------------------------------------------------------------------------
 clean:
 	@echo clean ...

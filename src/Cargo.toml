@@ -3,6 +3,14 @@ name = "rom_hack"
 version = "0.1.0"
 authors = ["Christopher Serr <cryze92@gmail.com>"]
 
+[profile.dev]
+debug = false
+opt-level = 1
+lto = true
+
+[profile.release]
+lto = true
+
 [lib]
 name = "rust"
 crate-type = ["staticlib"]

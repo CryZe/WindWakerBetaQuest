@@ -31,7 +31,7 @@ impl Assembler {
         for line in filtered_lines {
             if line.ends_with(':') {
                 self.program_counter = parse_program_counter_label(line)
-                                           .expect("Couldn't parse Address Label");
+                    .expect("Couldn't parse Address Label");
             } else {
                 let instruction = self.parse_instruction(line);
                 instructions.push(instruction);
@@ -68,8 +68,8 @@ impl Assembler {
     fn resolve_symbol(&self, symbol: &str) -> u32 {
         parse_u32_literal(symbol).unwrap_or_else(|_| {
             *self.symbol_table
-                 .get(symbol)
-                 .unwrap_or_else(|| panic!("The symbol \"{}\" wasn't found", symbol))
+                .get(symbol)
+                .unwrap_or_else(|| panic!("The symbol \"{}\" wasn't found", symbol))
         })
     }
 }
@@ -88,11 +88,7 @@ fn parse_i64_literal(literal: &str) -> Result<i64, ParseIntError> {
         let negative = literal.starts_with('-');
         literal = &literal[index + 2..];
 
-        let factor = if negative {
-            -1
-        } else {
-            1
-        };
+        let factor = if negative { -1 } else { 1 };
 
         i64::from_str_radix(literal, 16).map(|i| factor * i)
     } else {
@@ -111,12 +107,12 @@ fn parse_program_counter_label(line: &str) -> Result<u32, ParseIntError> {
 
 fn build_symbol_table(elf_path: &str) -> HashMap<String, u32> {
     let output = Command::new("powerpc-eabi-nm")
-                     .arg(elf_path)
-                     .output()
-                     .expect("Failed to retrieve the symbol table");
+        .arg(elf_path)
+        .output()
+        .expect("Failed to retrieve the symbol table");
 
     let output = str::from_utf8(&output.stdout)
-                     .expect("The symbol table is not a proper UTF-8 string");
+        .expect("The symbol table is not a proper UTF-8 string");
 
     let mut symbol_table = HashMap::new();
 
@@ -144,16 +140,8 @@ fn build_branch_instruction(address: u32, destination: u32, aa: bool, lk: bool) 
     } else {
         destination - address
     };
-    let bits_aa = if aa {
-        1
-    } else {
-        0
-    };
-    let bits_lk = if lk {
-        1
-    } else {
-        0
-    };
+    let bits_aa = if aa { 1 } else { 0 };
+    let bits_lk = if lk { 1 } else { 0 };
 
     (18 << 26) | (0x3FFFFFC & bits_dest) | (bits_aa << 1) | bits_lk
 }

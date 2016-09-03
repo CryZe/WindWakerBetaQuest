@@ -76,8 +76,8 @@ fn read_sections(data: &[u8],
             break;
         }
         let section_data = data[offset as usize..(offset + length) as usize]
-                               .to_vec()
-                               .into_boxed_slice();
+            .to_vec()
+            .into_boxed_slice();
         let section = Section {
             address: address,
             data: section_data,
@@ -150,13 +150,13 @@ impl DolFile {
     pub fn patch(&mut self, instructions: &[Instruction]) {
         for instruction in instructions {
             let section = self.text_sections
-                              .iter_mut()
-                              .chain(self.data_sections.iter_mut())
-                              .find(|d| {
-                                  d.address <= instruction.address &&
-                                  d.address + d.data.len() as u32 > instruction.address
-                              });
-                              
+                .iter_mut()
+                .chain(self.data_sections.iter_mut())
+                .find(|d| {
+                    d.address <= instruction.address &&
+                    d.address + d.data.len() as u32 > instruction.address
+                });
+
             if let Some(section) = section {
                 let index = (instruction.address - section.address) as usize;
                 write_u32(&mut section.data[index..], instruction.data);

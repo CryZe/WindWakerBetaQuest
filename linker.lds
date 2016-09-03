@@ -31,7 +31,7 @@ SECTIONS
 
     /* default base address */
     /* use -Wl,--section-start,.init=0xADDRESS to change */
-    . = 0x804c0000;
+    . = 0x80a00000;
 
     /* Program */
     .init          :
@@ -134,7 +134,7 @@ SECTIONS
     .data1   : { *(.data1) }
     .tdata    : { *(.tdata .tdata.* .gnu.linkonce.td.*) }
     .tbss         : { *(.tbss .tbss.* .gnu.linkonce.tb.*) *(.tcommon) }
-    .eh_frame : { KEEP (*(.eh_frame)) }
+    /* .eh_frame : { KEEP (*(.eh_frame)) } */
     .gcc_except_table : { *(.gcc_except_table) }
     .fixup          : { *(.fixup) }
     .got1           : { *(.got1) }

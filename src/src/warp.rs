@@ -26,7 +26,7 @@ impl<'a> fmt::Display for Origin<'a> {
         if let Some(room) = self.room {
             write!(f, "{}", room)
         } else {
-            write!(f, "Stage")
+            write!(f, "<Stage>")
         }
     }
 }
@@ -44,7 +44,7 @@ impl<'a> fmt::Display for Destination<'a> {
 
 impl<'origin, 'destination> fmt::Display for Warp<'origin, 'destination> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}, {}", self.origin, self.destination)
+        write!(f, "{} -> {}", self.origin, self.destination)
     }
 }
 
@@ -79,7 +79,23 @@ macro_rules! warps {
     }
 }
 
-pub static WARPS: &'static [Warp<'static, 'static>] = warps! {
+pub static HUB: &Destination = &Destination {
+    stage: "K_Test2",
+    room: 0,
+    spawn: 0,
+    fadeout: 0,
+};
+
+pub static HUB_WARPS: &[Warp] = warps! {
+    K_Test2, 0 -> sea, 0, 0, 0
+    K_Test2, 0 -> sea, 1, 0, 0
+    K_Test2, 0 -> sea, 2, 0, 0
+    K_Test2, 0 -> sea, 3, 0, 0
+    K_Test2, 0 -> sea, 4, 0, 0
+    K_Test2, 0 -> sea, 5, 0, 0
+};
+
+pub static WARPS: &[Warp] = warps! {
     Abesso, 0 -> sea, 33, 1, 0
     Abesso, 0 -> TF_04, 0, 0, 0
 //  Abship, Stage -> sea, 1, 100, 0 Annoying Ocean Warp
@@ -2043,8 +2059,9 @@ pub static WARPS: &'static [Warp<'static, 'static>] = warps! {
 
     // New Warps
 
-    M_NewD2, 8 -> M_Dra09, 9, 0, 9
-    GanonA, 1 -> Hyrule, 0, 4, 9
+    // M_NewD2, 8 -> M_Dra09, 9, 0, 9
+    // M_NewD2, 2, M_Dra09, 9, 0, 9
+    // GanonA, 1 -> Hyrule, 0, 4, 9
 
     // Needs checking
 
