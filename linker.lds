@@ -31,7 +31,7 @@ SECTIONS
 
     /* default base address */
     /* use -Wl,--section-start,.init=0xADDRESS to change */
-    . = 0x80a00000;
+    . = 0x804c0000;
 
     /* Program */
     .init          :

@@ -12,25 +12,34 @@ b set_next_stage_hook
 0x80230530: ; dScnOpen_Execute__FP10dScnOpen_c
 b 0x8023047c ; changeGameScene__10dScnOpen_cFv
 
-; 0x800A0C38:
-; bl ground_cross_hook
+; Hook Stage Loading
+0x800411e4:
+bl stage_load_hook
 
-; 0x8000645c:
-; bl game_loop
+; On Boomerang
+0x800c0c80:
+b on_boomerang
 
-; 0x8009fb20:
-; nop
-; 0x8009fb38:
-; nop
-; 0x8009e5f0:
-; nop
-; 0x8009e608:
-; nop
-; 0x8009e19c:
-; nop
-; 0x8009e1b4:
-; nop
-; 0x802445d8:
-; nop
-; 0x802445f0:
-; nop
+; On Bomb Bag
+0x800c0d74:
+b on_bombs
+
+; On Bow
+0x800c0b20:
+b on_bow
+
+; On Deku Leaf
+0x800c0e0c:
+b on_deku_leaf
+
+; On Hookshot
+0x800c0cec:
+b on_hookshot
+
+; On Skull Hammer
+0x800c0dc8:
+b on_skull_hammer
+
+; On Save
+0x800533ac:
+bl on_save

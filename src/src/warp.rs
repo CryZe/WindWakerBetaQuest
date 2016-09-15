@@ -529,8 +529,8 @@ pub static WARPS: &[Warp] = warps! {
 //  I_TestM, 0 -> I_TestM, 0, 1, 5 Test Map
     Kaisen, 0 -> sea, 11, 9, 11
     Kaisen, 0 -> sea, 11, 8, 11
-    Kaisen, Stage -> LinkRM, 255, 89, 0
-    Kaisen, Stage -> LinkRM, 255, 90, 0
+//  Kaisen, Stage -> LinkRM, 255, 89, 0 Weird Warp to Link's House
+//  Kaisen, Stage -> LinkRM, 255, 90, 0 Weird Warp to Link's House
 //  KATA_RM, 18 -> KATA_RM, 18, 1, 0 Test Map
     kaze, 0 -> kaze, 255, 22, 4
     kaze, 0 -> kaze, 255, 23, 4
@@ -735,8 +735,8 @@ pub static WARPS: &[Warp] = warps! {
     Obombh, 0 -> Obombh, 0, 0, 0
     Obombh, 0 -> sea, 11, 1, 11
     Obombh, 0 -> sea, 11, 2, 4
-    Obombh, Stage -> LinkRM, 255, 80, 0
-    Obombh, Stage -> LinkRM, 255, 81, 0
+//  Obombh, Stage -> LinkRM, 255, 80, 0 Weird Warp to Link's House
+//  Obombh, Stage -> LinkRM, 255, 81, 0 Weird Warp to Link's House
 //  Obshop, Stage -> sea, 1, 100, 0 Annoying Ocean Warp and Test Map
 //  Obshop, Stage -> sea, 1, 101, 0 Annoying Ocean Warp and Test Map
 //  Obshop, Stage -> sea, 1, 102, 0 Annoying Ocean Warp and Test Map
@@ -949,7 +949,7 @@ pub static WARPS: &[Warp] = warps! {
 //  Obshop, Stage -> sea, 1, 99, 1 Test Map
 //  Obshop, Stage -> sea, 1, 99, 1 Test Map
 //  Obshop, Stage -> sea, 1, 99, 1 Test Map
-    Ocean, Stage -> LinkRM, 255, 2, 0
+//  Ocean, Stage -> LinkRM, 255, 2, 0 Weird Warp to Link's House
     Ocmera, 0 -> sea, 11, 10, 11
     Ocmera, 0 -> sea, 11, 11, 11
     Ocrogh, 0 -> Omori, 0, 0, 0
@@ -1259,7 +1259,7 @@ pub static WARPS: &[Warp] = warps! {
 //  sea, 38 -> ITest63, 0, 0, 0 Test Map
     sea, 39 -> Fairy06, 0, 0, 0
     sea, 40 -> MiniHyo, 0, 0, 0
-    sea, 41 -> LinkRM, 41, 0, 8
+//  sea, 41 -> LinkRM, 41, 0, 8 Weird Warp to Link's House
     sea, 41 -> Omori, 0, 1, 8
     sea, 41 -> Omori, 0, 2, 8
     sea, 41 -> Omori, 0, 3, 8
@@ -2065,5 +2065,7 @@ pub static WARPS: &[Warp] = warps! {
 
     // Needs checking
 
+    // sea -> DRI Inner seems to fail Link::room() not working properly?
+    // Warp not found: Omori, <Stage> -> sea, 41, 5, 1
     // sea, 1, 99, 1 Softlock (maybe having KoRL fixes this)
 };
