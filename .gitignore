@@ -1,5 +1,9 @@
 build/
 lib/
 game/
+!game/PUT_GAME_HERE
 rom_hack.iso
 prefs.ini
+target
+Cargo.lock
+cheat.txt

@@ -7,9 +7,11 @@ extern crate libtww;
 #[allow(unused)]
 use libtww::prelude::*;
 
+extern crate rand;
+
 mod warp;
 
-use libtww::rand::{XorShiftRng, SeedableRng, Rng, sample};
+use rand::{XorShiftRng, SeedableRng, Rng, sample};
 use warp::{Origin, Destination, Warp, WARPS, HUB, HUB_WARPS};
 
 use libtww::Addr;
@@ -161,12 +163,18 @@ pub extern "C" fn stage_load_hook(a: Addr, b: Addr) {
     dStage_dt_c_stageLoader(a, b);
 }
 
+fn store_entrance_in_save_file(entrance: &Entrance) {
+    *memory::reference(0x803B84AC) = entrance.clone();
+}
+
 #[no_mangle]
 #[inline(never)]
 pub extern "C" fn set_next_stage_hook() {
     if let Some(&(ref table, _)) = unsafe { WARP_TABLE.as_ref() } {
         let entrance = Entrance::last_entrance();
         let exit = GameWarp::last_exit();
+
+        store_entrance_in_save_file(&entrance);
 
         let mut warp = Warp {
             origin: Origin {

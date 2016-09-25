@@ -16,4 +16,5 @@ name = "rust"
 crate-type = ["staticlib"]
 
 [dependencies]
-libtww = { path = "../libtww" }
+libtww = { path = "libtww" }
+rand = { path = "libtww/crates/rand" }
